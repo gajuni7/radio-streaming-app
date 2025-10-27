@@ -1,0 +1,7 @@
+{
+  "name": "radio-streaming-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

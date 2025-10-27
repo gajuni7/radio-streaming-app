@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>🎧 Radio Online</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" fullscreen>
+  <div class="container">
+    <img src="assets/logo.png" alt="Logo" class="logo" />
+
+    <h2>Tu Emisora Favorita</h2>
+
+    <ion-button expand="block" color="success" (click)="togglePlay()">
+      <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
+      {{ isPlaying ? 'Pausar' : 'Reproducir' }}
+    </ion-button>
+
+    <p *ngIf="isPlaying">🔊 Transmitiendo en vivo...</p>
+    <p *ngIf="!isPlaying">⏸️ En pausa</p>
+  </div>
+</ion-content>
