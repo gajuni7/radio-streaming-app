@@ -1,21 +1,102 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>🎧 Radio Online</ion-title>
-  </ion-toolbar>
-</ion-header>
 
-<ion-content class="ion-padding" fullscreen>
-  <div class="container">
-    <img src="assets/logo.png" alt="Logo" class="logo" />
+<ion-content class="ion-padding radio-content" fullscreen>
+  <!-- Video de fondo -->
+  <video autoplay muted loop class="background-video">
+    <source src="assets/video/background-video.mp4" type="video/mp4">
+  </video>
+  
+  <div class="radio-container">
+    <!-- Logo y título de la emisora -->
+    <div class="station-info">
+      <div class="logo-container">
+        <img [src]="stationInfo.logo" [alt]="stationInfo.name + ' Logo'" class="station-logo" />
+      </div>
+    </div>
 
-    <h2>Tu Emisora Favorita</h2>
+    <!-- Reproductor de audio reorganizado -->
+    <div class="player-section">
+      <div class="status-indicator">
+        @if (isPlaying) {
+          <div class="live-indicator">
+            <span class="pulse-dot"></span>
+            <span class="live-text">EN VIVO</span>
+          </div>
+        } @else {
+          <div class="offline-indicator">
+            <span class="offline-text">DESCONECTADO</span>
+          </div>
+        }
+      </div>
 
-    <ion-button expand="block" color="success" (click)="togglePlay()">
-      <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
-      {{ isPlaying ? 'Pausar' : 'Reproducir' }}
-    </ion-button>
+      <!-- Ecualizador horizontal arriba -->
+      <div class="horizontal-equalizer" [class.active]="isPlaying">
+        <div class="hz-bar" style="--height: 60%; --delay: 0.1s"></div>
+        <div class="hz-bar" style="--height: 80%; --delay: 0.3s"></div>
+        <div class="hz-bar" style="--height: 40%; --delay: 0.5s"></div>
+        <div class="hz-bar" style="--height: 90%; --delay: 0.2s"></div>
+        <div class="hz-bar" style="--height: 70%; --delay: 0.7s"></div>
+        <div class="hz-bar" style="--height: 50%; --delay: 0.4s"></div>
+        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
+        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
+        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
+        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
+        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
+        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
+        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
+        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
+        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
+      </div>
 
-    <p *ngIf="isPlaying">🔊 Transmitiendo en vivo...</p>
-    <p *ngIf="!isPlaying">⏸️ En pausa</p>
+      <!-- Botón play central con solo ondas -->
+      <div class="player-center">
+        <div class="sound-waves" [class.active]="isPlaying">
+          <div class="wave wave-1"></div>
+          <div class="wave wave-2"></div>
+          <div class="wave wave-3"></div>
+        </div>
+        
+        <ion-button 
+          fill="clear"
+          size="default"
+          (click)="togglePlay()"
+          class="main-play-button">
+          <ion-icon [name]="isPlaying ? 'pause' : 'play'" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+
+      <!-- Control de volumen compacto -->
+      <div class="volume-control">
+        <div class="volume-container">
+          <ion-icon name="volume-low" class="volume-icon"></ion-icon>
+          <ion-range 
+            [(ngModel)]="volume" 
+            (ionInput)="onVolumeChange($event)"
+            min="0" 
+            max="100" 
+            pin="true"
+            class="volume-slider">
+          </ion-range>
+          <ion-icon name="volume-high" class="volume-icon"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Redes sociales -->
+    <div class="social-section">
+      <div class="social-buttons">
+        <ion-button fill="outline" (click)="openSocial('facebook')" class="social-btn facebook">
+          <ion-icon name="logo-facebook" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="outline" (click)="openSocial('instagram')" class="social-btn instagram">
+          <ion-icon name="logo-instagram" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="outline" (click)="openSocial('whatsapp')" class="social-btn whatsapp">
+          <ion-icon name="logo-whatsapp" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="outline" (click)="openSocial('tiktok')" class="social-btn tiktok">
+          <ion-icon name="logo-tiktok" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
   </div>
 </ion-content>

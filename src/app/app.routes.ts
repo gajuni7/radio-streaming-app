@@ -3,6 +3,10 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
+    loadComponent: () => import('./explore-container/explore-container.component').then((m) => m.ExploreContainerComponent),
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];
