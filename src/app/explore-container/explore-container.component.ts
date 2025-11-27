@@ -25,10 +25,12 @@ import {
   musicalNotes,
 } from 'ionicons/icons';
 import { HttpClient } from '@angular/common/http';
+import { NativeHttpService } from '../services/native-http.service';
+import { environment } from '../../environments/environment';
 import { interval, Subscription } from 'rxjs';
+import { Media, MediaObject } from '@awesome-cordova-plugins/media/ngx';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Capacitor } from '@capacitor/core';
-import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 @Component({
   selector: 'app-explore-container',
   templateUrl: './explore-container.component.html',
@@ -39,17 +41,18 @@ import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions
     IonContent,
     IonIcon,
     IonButton,
-    IonRange
+    IonRange,
   ],
-  providers: [BackgroundMode, AndroidPermissions],
+  providers: [BackgroundMode, Media],
 })
 export class ExploreContainerComponent implements OnInit, OnDestroy {
   @Input() name?: string;
 
-  private player: Howl | null = null;
+  private mediaObj: MediaObject | null = null; // nativo (Android/iOS)
+  private webHowl: Howl | null = null; // navegador (web)
   private metadataSubscription?: Subscription;
   private metadataInterval = 30000; // Actualizar cada 10 segundos
-  
+
   isPlaying = false;
   volume = 80; // Volumen inicial al 80%
 
@@ -57,21 +60,21 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
   currentSong = {
     title: 'Cargando',
     artist: '',
-    album: ''
+    album: '',
   };
 
   // Información de la emisora
   stationInfo = {
     name: 'Undeco RadiOnline',
     tagline: 'Tu emisora de confianza',
-    logo: 'assets/images/UNDECO_Radio_logo.png'
+    logo: 'assets/images/UNDECO_Radio_logo.png',
   };
 
   private isNativePlatform = Capacitor.getPlatform() !== 'web';
 
   // URL del streaming de la emisora
   streamUrl = 'https://sp1.hostingclouds.net/8006/stream';
-  metadataUrl = '/api/8006/stats';
+  metadataUrl = `${environment.apiUrl}/8006/stats`;
 
   // URLs de redes sociales
   socialLinks = {
@@ -90,8 +93,10 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
+    private nativeHttp: NativeHttpService,
     private backgroundMode: BackgroundMode,
-    private androidPermissions: AndroidPermissions
+    // android permissions removed
+    private media: Media
   ) {
     // Registrar los iconos necesarios
     addIcons({
@@ -111,24 +116,43 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    console.log('ORIGIN REAL:', location.origin);
+    console.log('ES NATIVO:', Capacitor.isNativePlatform());
   }
 
   ngOnDestroy() {
     // Limpiar suscripciones y detener el reproductor
     this.stopMetadataPolling();
-    if (this.player) {
-      this.player.unload();
+    if (this.mediaObj) {
+      try {
+        this.mediaObj.stop();
+      } catch {}
+      try {
+        this.mediaObj.release();
+      } catch {}
+      this.mediaObj = null;
+    }
+    if (this.webHowl) {
+      try {
+        this.webHowl.stop();
+      } catch {}
+      try {
+        this.webHowl.unload();
+      } catch {}
+      this.webHowl = null;
     }
   }
 
   startMetadataPolling() {
     // Obtener metadatos inmediatamente
     this.fetchMetadata();
-    
+
     // Configurar actualización automática de metadatos
-    this.metadataSubscription = interval(this.metadataInterval).subscribe(() => {
-      this.fetchMetadata();
-    });
+    this.metadataSubscription = interval(this.metadataInterval).subscribe(
+      () => {
+        this.fetchMetadata();
+      }
+    );
   }
 
   stopMetadataPolling() {
@@ -139,13 +163,9 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
   }
 
   fetchMetadata() {
-    this.http.get(this.metadataUrl, { responseType: 'text' }).subscribe({
-      next: (xmlData) => {
-        this.parseXMLMetadata(xmlData);
-      },
-      error: (error) => {
-        console.error('Error obteniendo metadatos:', error);
-      }
+    this.nativeHttp.get<string>(this.metadataUrl, { responseType: 'text' }).subscribe({
+      next: (xmlData) => this.parseXMLMetadata(xmlData),
+      error: (error) => console.log('Error obteniendo metadatos (native/http):', error)
     });
   }
 
@@ -153,25 +173,28 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     try {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-      
+
       // Obtener el título de la canción
       const songTitleElement = xmlDoc.getElementsByTagName('SONGTITLE')[0];
       const songTitle = songTitleElement?.textContent?.trim() || '';
-      
+
       // Obtener otros datos útiles
-      const serverTitle = xmlDoc.getElementsByTagName('SERVERTITLE')[0]?.textContent || '';
-      const currentListeners = xmlDoc.getElementsByTagName('CURRENTLISTENERS')[0]?.textContent || '0';
-      const bitrate = xmlDoc.getElementsByTagName('BITRATE')[0]?.textContent || '';
-      
+      const serverTitle =
+        xmlDoc.getElementsByTagName('SERVERTITLE')[0]?.textContent || '';
+      const currentListeners =
+        xmlDoc.getElementsByTagName('CURRENTLISTENERS')[0]?.textContent || '0';
+      const bitrate =
+        xmlDoc.getElementsByTagName('BITRATE')[0]?.textContent || '';
+
       console.log('Servidor:', serverTitle);
       console.log('Oyentes:', currentListeners);
       console.log('Bitrate:', bitrate);
-      
+
       if (songTitle) {
         this.parseSongTitle(songTitle);
       }
     } catch (error) {
-      console.error('Error parseando XML:', error);
+      console.log('Error parseando XML:', error);
     }
   }
 
@@ -183,59 +206,111 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
       this.currentSong = {
         artist: parts[0].trim(),
         title: parts[1].trim(),
-        album: ''
+        album: '',
       };
     } else {
       this.currentSong = {
         artist: '',
         title: songTitle.trim(),
-        album: ''
+        album: '',
       };
     }
   }
 
-  private initPlayer() {
-    this.player = new Howl({
-      src: [this.streamUrl],
-      html5: true,
-      format: ['mp3', 'aac'],
-      volume: this.volume / 100, // Configurar volumen inicial
-      onplay: () => {
-        this.isPlaying = true;
-        this.startMetadataPolling(); // Iniciar obtención de metadatos
-      },
-      onend: () => console.log('Stream finalizado'),
-      onpause: () => {
-        this.isPlaying = false;
-        this.stopMetadataPolling(); // Detener obtención de metadatos
-      },
-      onloaderror: (id: any, error: any) => {
-        console.error('Error cargando stream:', error);
-        this.isPlaying = false;
-        this.stopMetadataPolling();
-      },
-      onplayerror: (id: any, error: any) => {
-        console.error('Error reproduciendo stream:', error);
-        this.isPlaying = false;
-        this.stopMetadataPolling();
-      },
-    });
+  private createMediaIfNeeded() {
+    if (!this.mediaObj) {
+      if (this.isNativePlatform) {
+        this.mediaObj = this.media.create(this.streamUrl);
+        this.mediaObj.onError.subscribe((err) => {
+          console.log('Media error:', err);
+        });
+        this.mediaObj.onStatusUpdate.subscribe((status) => {
+          // 1: starting, 2: running, 3: paused, 4: stopped
+          console.log('Media status:', status);
+        });
+        try {
+          this.mediaObj.setVolume(this.volume / 100);
+        } catch {}
+      } else {
+        console.warn('Media plugin only works on device (native).');
+      }
+    }
   }
 
+  private createWebHowlIfNeeded() {
+    if (!this.webHowl) {
+      this.webHowl = new Howl({
+        src: [this.streamUrl],
+        html5: true,
+        format: ['mp3', 'aac'],
+        volume: this.volume / 100,
+        onplay: () => {
+          this.isPlaying = true;
+          this.startMetadataPolling();
+        },
+        onpause: () => {
+          this.isPlaying = false;
+          this.stopMetadataPolling();
+        },
+        onend: () => {
+          this.isPlaying = false;
+          this.stopMetadataPolling();
+        },
+        onloaderror: (_id, error) => {
+          console.log('Web Howl load error:', error);
+          this.isPlaying = false;
+        },
+        onplayerror: (_id, error) => {
+          console.log('Web Howl play error:', error);
+          this.isPlaying = false;
+        },
+      });
+    }
+  }
 
   play() {
-    if (!this.player) {
-      this.initPlayer();
+    if (this.isNativePlatform) {
+      this.createMediaIfNeeded();
+      if (!this.mediaObj) {
+        return;
+      }
+      try {
+        this.mediaObj.play();
+        this.isPlaying = true;
+        this.startMetadataPolling();
+      } catch (error) {
+        console.log('Error reproduciendo stream (native):', error);
+        this.isPlaying = false;
+      }
+    } else {
+      this.createWebHowlIfNeeded();
+      try {
+        this.webHowl?.play();
+        // onplay callback sets flags
+      } catch (error) {
+        console.log('Error reproduciendo stream (web):', error);
+        this.isPlaying = false;
+      }
     }
-
-    this.player?.play();
   }
 
   pause() {
-    if (this.player) {
-      this.player.pause();
-      this.isPlaying = false;
-      this.stopMetadataPolling(); // Detener obtención de metadatos
+    if (this.isNativePlatform) {
+      if (this.mediaObj) {
+        try {
+          this.mediaObj.pause();
+        } catch {}
+        this.isPlaying = false;
+        this.stopMetadataPolling();
+      }
+    } else {
+      if (this.webHowl) {
+        try {
+          this.webHowl.pause();
+        } catch {}
+        this.isPlaying = false;
+        this.stopMetadataPolling();
+      }
     }
   }
 
@@ -249,12 +324,22 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
 
   onVolumeChange(event: any) {
     this.volume = event.detail.value;
-    if (this.player) {
-      this.player.volume(this.volume / 100);
+    if (this.isNativePlatform) {
+      if (this.mediaObj) {
+        try {
+          this.mediaObj.setVolume(this.volume / 100);
+        } catch {}
+      }
+    } else {
+      if (this.webHowl) {
+        try {
+          this.webHowl.volume(this.volume / 100);
+        } catch {}
+      }
     }
   }
 
-  // Native player removed; background playback disabled
+  // Reproductor nativo via cordova-plugin-media
 
   openSocial(platform: string) {
     const url = this.socialLinks[platform as keyof typeof this.socialLinks];

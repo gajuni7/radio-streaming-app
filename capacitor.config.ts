@@ -4,9 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.undeco.radioonline',
   appName: 'Undeco RadioOnline',
   webDir: 'www',
-  server: {
-    androidScheme: 'https'
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
