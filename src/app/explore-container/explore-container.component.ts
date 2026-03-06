@@ -5,6 +5,7 @@ import {
   IonIcon,
   IonButton,
   IonRange,
+  IonFooter
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,18 +20,17 @@ import {
   volumeLow,
   volumeHigh,
   videocam,
-  globe,
   logoYoutube,
-  musicalNote,
   musicalNotes,
+  globe,
 } from 'ionicons/icons';
 import { HttpClient } from '@angular/common/http';
 import { NativeHttpService } from '../services/native-http.service';
 import { environment } from '../../environments/environment';
 import { interval, Subscription } from 'rxjs';
-import { Media, MediaObject } from '@awesome-cordova-plugins/media/ngx';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
+// Native playback handled via RadioService; Howler used for web
 import { Capacitor } from '@capacitor/core';
+import { RadioService } from '../services/radio.service';
 @Component({
   selector: 'app-explore-container',
   templateUrl: './explore-container.component.html',
@@ -42,13 +42,13 @@ import { Capacitor } from '@capacitor/core';
     IonIcon,
     IonButton,
     IonRange,
+    IonFooter
   ],
-  providers: [BackgroundMode, Media],
+  providers: [],
 })
 export class ExploreContainerComponent implements OnInit, OnDestroy {
   @Input() name?: string;
 
-  private mediaObj: MediaObject | null = null; // nativo (Android/iOS)
   private webHowl: Howl | null = null; // navegador (web)
   private metadataSubscription?: Subscription;
   private metadataInterval = 30000; // Actualizar cada 10 segundos
@@ -91,12 +91,14 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     return false;
   }
 
+  public get showVolumeControl(): boolean {
+    return false;
+  }
+
   constructor(
-    private http: HttpClient,
     private nativeHttp: NativeHttpService,
-    private backgroundMode: BackgroundMode,
-    // android permissions removed
-    private media: Media
+    private radio: RadioService,
+    private http: HttpClient
   ) {
     // Registrar los iconos necesarios
     addIcons({
@@ -111,35 +113,27 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
       volumeLow,
       volumeHigh,
       videocam,
-      globe,
+      globe
     });
   }
 
-  ngOnInit() {
-    console.log('ORIGIN REAL:', location.origin);
-    console.log('ES NATIVO:', Capacitor.isNativePlatform());
-  }
+  ngOnInit() {}
 
   ngOnDestroy() {
     // Limpiar suscripciones y detener el reproductor
     this.stopMetadataPolling();
-    if (this.mediaObj) {
-      try {
-        this.mediaObj.stop();
-      } catch {}
-      try {
-        this.mediaObj.release();
-      } catch {}
-      this.mediaObj = null;
-    }
-    if (this.webHowl) {
-      try {
-        this.webHowl.stop();
-      } catch {}
-      try {
-        this.webHowl.unload();
-      } catch {}
-      this.webHowl = null;
+    if (this.isNativePlatform) {
+      this.radio.stopAndRelease();
+    } else {
+      if (this.webHowl) {
+        try {
+          this.webHowl.stop();
+        } catch {}
+        try {
+          this.webHowl.unload();
+        } catch {}
+        this.webHowl = null;
+      }
     }
   }
 
@@ -162,12 +156,27 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     }
   }
 
-  fetchMetadata() {
-    this.nativeHttp.get<string>(this.metadataUrl, { responseType: 'text' }).subscribe({
-      next: (xmlData) => this.parseXMLMetadata(xmlData),
-      error: (error) => console.log('Error obteniendo metadatos (native/http):', error)
-    });
+fetchMetadata() {
+  if (this.isNativePlatform) {
+    // ANDROID / IOS
+    this.nativeHttp
+      .get<string>(this.metadataUrl, { responseType: 'text' })
+      .subscribe({
+        next: (xmlData) => this.parseXMLMetadata(xmlData),
+        error: (error) =>
+          console.log('Error obteniendo metadatos (native/http):', error),
+      });
+  } else {
+    // WEB NORMAL (HttpClient)
+    this.http
+      .get(this.metadataUrl, { responseType: 'text' })
+      .subscribe({
+        next: (xmlData) => this.parseXMLMetadata(xmlData),
+        error: (error) =>
+          console.log('Error obteniendo metadatos (web/http):', error),
+      });
   }
+}
 
   parseXMLMetadata(xmlString: string) {
     try {
@@ -217,25 +226,7 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private createMediaIfNeeded() {
-    if (!this.mediaObj) {
-      if (this.isNativePlatform) {
-        this.mediaObj = this.media.create(this.streamUrl);
-        this.mediaObj.onError.subscribe((err) => {
-          console.log('Media error:', err);
-        });
-        this.mediaObj.onStatusUpdate.subscribe((status) => {
-          // 1: starting, 2: running, 3: paused, 4: stopped
-          console.log('Media status:', status);
-        });
-        try {
-          this.mediaObj.setVolume(this.volume / 100);
-        } catch {}
-      } else {
-        console.warn('Media plugin only works on device (native).');
-      }
-    }
-  }
+  // Native playback is delegated to RadioService
 
   private createWebHowlIfNeeded() {
     if (!this.webHowl) {
@@ -270,18 +261,9 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
 
   play() {
     if (this.isNativePlatform) {
-      this.createMediaIfNeeded();
-      if (!this.mediaObj) {
-        return;
-      }
-      try {
-        this.mediaObj.play();
-        this.isPlaying = true;
-        this.startMetadataPolling();
-      } catch (error) {
-        console.log('Error reproduciendo stream (native):', error);
-        this.isPlaying = false;
-      }
+      this.radio.play();
+      this.isPlaying = true;
+      this.startMetadataPolling();
     } else {
       this.createWebHowlIfNeeded();
       try {
@@ -296,13 +278,9 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
 
   pause() {
     if (this.isNativePlatform) {
-      if (this.mediaObj) {
-        try {
-          this.mediaObj.pause();
-        } catch {}
-        this.isPlaying = false;
-        this.stopMetadataPolling();
-      }
+      this.radio.pause();
+      this.isPlaying = false;
+      this.stopMetadataPolling();
     } else {
       if (this.webHowl) {
         try {
@@ -322,14 +300,11 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Background handling moved into RadioService
   onVolumeChange(event: any) {
     this.volume = event.detail.value;
     if (this.isNativePlatform) {
-      if (this.mediaObj) {
-        try {
-          this.mediaObj.setVolume(this.volume / 100);
-        } catch {}
-      }
+      this.radio.setVolume(this.volume);
     } else {
       if (this.webHowl) {
         try {

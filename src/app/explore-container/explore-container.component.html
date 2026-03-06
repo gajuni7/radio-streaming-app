@@ -1,9 +1,8 @@
-<ion-content class="ion-padding radio-content" fullscreen>
   <!-- Video de fondo -->
+<ion-content class="ion-padding radio-content">
   <video autoplay muted loop class="background-video">
     <source src="assets/video/background-video.mp4" type="video/mp4" />
   </video>
-
   <div class="radio-container">
     <!-- Logo y título de la emisora -->
     <div class="station-info">
@@ -31,25 +30,6 @@
         }
       </div>
 
-      <!-- Ecualizador horizontal arriba -->
-      <div class="horizontal-equalizer" [class.active]="isPlaying">
-        <div class="hz-bar" style="--height: 60%; --delay: 0.1s"></div>
-        <div class="hz-bar" style="--height: 80%; --delay: 0.3s"></div>
-        <div class="hz-bar" style="--height: 40%; --delay: 0.5s"></div>
-        <div class="hz-bar" style="--height: 90%; --delay: 0.2s"></div>
-        <div class="hz-bar" style="--height: 70%; --delay: 0.7s"></div>
-        <div class="hz-bar" style="--height: 50%; --delay: 0.4s"></div>
-        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
-        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
-        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
-        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
-        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
-        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
-        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
-        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
-        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
-      </div>
-
       <!-- Botón play central con solo ondas -->
       <div class="player-center">
         <div class="sound-waves" [class.active]="isPlaying">
@@ -71,21 +51,73 @@
         </ion-button>
       </div>
 
+      <div class="now-playing-inline" *ngIf="isPlaying">
+        <p class="song-title-inline">
+          <ion-icon name="musical-notes" class="music-icon"></ion-icon>
+          <span class="separator"> ... </span>
+          <span *ngIf="currentSong.artist">{{ currentSong.artist }} - </span
+          >{{ currentSong.title }}
+          <span class="separator"> ... </span>
+          <ion-icon name="musical-notes" class="music-icon"></ion-icon>
+        </p>
+      </div>
+
+            <!-- Ecualizador horizontal arriba -->
+      <div class="horizontal-equalizer" [class.active]="isPlaying">
+        <div class="hz-bar" style="--height: 60%; --delay: 0.1s"></div>
+        <div class="hz-bar" style="--height: 80%; --delay: 0.3s"></div>
+        <div class="hz-bar" style="--height: 40%; --delay: 0.5s"></div>
+        <div class="hz-bar" style="--height: 90%; --delay: 0.2s"></div>
+        <div class="hz-bar" style="--height: 70%; --delay: 0.7s"></div>
+        <div class="hz-bar" style="--height: 50%; --delay: 0.4s"></div>
+        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
+        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
+        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
+        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
+        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
+        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
+        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
+        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
+        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
+        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
+        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
+        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
+        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
+        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
+        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
+        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
+        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
+        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
+        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
+        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
+        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
+        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
+        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
+        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
+        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
+        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
+        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
+        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
+        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
+      </div>
+
       <!-- Control de volumen compacto -->
-      <div class="volume-control">
+      <div *ngIf="showVolumeControl" class="volume-control">
         <div class="volume-container">
           <ion-icon name="volume-low" class="volume-icon"></ion-icon>
-          
+
           <div class="volume-center">
-            <div class="now-playing-inline" *ngIf="isPlaying">
+            <!-- <div class="now-playing-inline" *ngIf="isPlaying">
               <p class="song-title-inline">
                 <ion-icon name="musical-notes" class="music-icon"></ion-icon>
                 <span class="separator"> ... </span>
-                <span *ngIf="currentSong.artist">{{ currentSong.artist }} - </span>{{ currentSong.title }}
+                <span *ngIf="currentSong.artist"
+                  >{{ currentSong.artist }} - </span
+                >{{ currentSong.title }}
                 <span class="separator"> ... </span>
                 <ion-icon name="musical-notes" class="music-icon"></ion-icon>
               </p>
-            </div>
+            </div> -->
             <ion-range
               [(ngModel)]="volume"
               (ionInput)="onVolumeChange($event)"
@@ -96,13 +128,16 @@
             >
             </ion-range>
           </div>
-          
+
           <ion-icon name="volume-high" class="volume-icon"></ion-icon>
         </div>
       </div>
     </div>
+  </div>
+</ion-content>
 
-    <!-- Redes sociales -->
+<ion-footer>
+      <!-- Redes sociales -->
     <div class="social-section">
       <div class="social-buttons">
         <ion-button
@@ -147,7 +182,13 @@
         >
           <ion-icon name="globe" slot="icon-only"></ion-icon>
         </ion-button>
+        <ion-button
+          fill="outline"
+          (click)="openSocial('live')"
+          class="social-btn videocam"
+        >
+          <ion-icon name="videocam" slot="icon-only"></ion-icon>
+        </ion-button>
       </div>
     </div>
-  </div>
-</ion-content>
+</ion-footer>

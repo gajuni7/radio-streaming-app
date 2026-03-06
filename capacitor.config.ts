@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.undeco.radioonline',
-  appName: 'Undeco RadioOnline',
+  appId: 'com.undeco.radio',
+  appName: 'Undeco Radio',
   webDir: 'www',
   plugins: {
     SplashScreen: {
@@ -13,6 +13,9 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: 'dark',
       backgroundColor: '#1a1a2e'
+    },
+    PushNotifications: {
+      smallIcon: "ic_launcher",
     }
   }
 };

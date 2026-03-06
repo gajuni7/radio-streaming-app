@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.undeco.radioonline;
 
 import com.getcapacitor.BridgeActivity;
 
