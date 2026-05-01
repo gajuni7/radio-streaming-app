@@ -49,10 +49,6 @@ import { RadioService } from '../services/radio.service';
 export class ExploreContainerComponent implements OnInit, OnDestroy {
   @Input() name?: string;
 
-  private webHowl: Howl | null = null; // navegador (web)
-  private metadataSubscription?: Subscription;
-  private metadataInterval = 30000; // Actualizar cada 10 segundos
-
   isPlaying = false;
   volume = 80; // Volumen inicial al 80%
 
@@ -70,7 +66,43 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     logo: 'assets/images/UNDECO_Radio_logo.png',
   };
 
-  private isNativePlatform = Capacitor.getPlatform() !== 'web';
+  isNativePlatform = Capacitor.getPlatform() !== 'web';
+
+  private readonly equalizerConfig = {
+    barCount: this.isNativePlatform ? 35 : 70,
+    minHeight: 30,
+    maxHeight: 95,
+    minDelay: 0.1,
+    maxDelay: 0.9,
+  };
+
+  hzBars = this.createHzBars();
+
+  private webHowl: Howl | null = null; // navegador (web)
+  private metadataSubscription?: Subscription;
+  private metadataInterval = 30000; // Actualizar cada 10 segundos
+
+  private createHzBars() {
+    const {
+      barCount,
+      minHeight,
+      maxHeight,
+      minDelay,
+      maxDelay,
+    } = this.equalizerConfig;
+
+    return Array.from({ length: barCount }, (_, index) => {
+      const heightFactor = (Math.sin(index * 1.7) + 1) / 2;
+      const delayFactor = (Math.sin(index * 2.3 + 1) + 1) / 2;
+      const height = Math.round(minHeight + heightFactor * (maxHeight - minHeight));
+      const delay = (minDelay + delayFactor * (maxDelay - minDelay)).toFixed(1);
+
+      return {
+        height: `${height}%`,
+        delay: `${delay}s`,
+      };
+    });
+  }
 
   // URL del streaming de la emisora
   streamUrl = 'https://sp1.hostingclouds.net/8006/stream';
