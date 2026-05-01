@@ -107,6 +107,7 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
   // URL del streaming de la emisora
   streamUrl = 'https://sp1.hostingclouds.net/8006/stream';
   metadataUrl = `${environment.apiUrl}/8006/stats`;
+  nativeMetadataUrl = 'https://sp1.hostingclouds.net/8006/stats';
 
   // URLs de redes sociales
   socialLinks = {
@@ -188,27 +189,27 @@ export class ExploreContainerComponent implements OnInit, OnDestroy {
     }
   }
 
-fetchMetadata() {
-  if (this.isNativePlatform) {
-    // ANDROID / IOS
-    this.nativeHttp
-      .get<string>(this.metadataUrl, { responseType: 'text' })
-      .subscribe({
-        next: (xmlData) => this.parseXMLMetadata(xmlData),
-        error: (error) =>
-          console.log('Error obteniendo metadatos (native/http):', error),
-      });
-  } else {
-    // WEB NORMAL (HttpClient)
-    this.http
-      .get(this.metadataUrl, { responseType: 'text' })
-      .subscribe({
-        next: (xmlData) => this.parseXMLMetadata(xmlData),
-        error: (error) =>
-          console.log('Error obteniendo metadatos (web/http):', error),
-      });
+  fetchMetadata() {
+    if (this.isNativePlatform) {
+      // ANDROID / IOS
+      this.nativeHttp
+        .get<string>(this.nativeMetadataUrl, { responseType: 'text' })
+        .subscribe({
+          next: (xmlData) => this.parseXMLMetadata(xmlData),
+          error: (error) =>
+            console.log('Error obteniendo metadatos (native/http):', error),
+        });
+    } else {
+      // WEB NORMAL (HttpClient)
+      this.http
+        .get(this.metadataUrl, { responseType: 'text' })
+        .subscribe({
+          next: (xmlData) => this.parseXMLMetadata(xmlData),
+          error: (error) =>
+            console.log('Error obteniendo metadatos (web/http):', error),
+        });
+    }
   }
-}
 
   parseXMLMetadata(xmlString: string) {
     try {
