@@ -75,7 +75,7 @@ ion-header {
 
 .player-section {
   width: 100%;
-  max-width: 400px;    
+  max-width: 400px;
   margin: auto;
 
   // Información de la canción actual
@@ -622,7 +622,7 @@ ion-footer {
 }
 
 /* Tablets (portrait) */
-@media (min-width: 600px) and (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1023px) {
   .station-info .logo-container .station-logo {
     max-height: 270px;
   }
@@ -643,6 +643,26 @@ ion-footer {
       height: 70px;
       ion-icon {
         font-size: 35px;
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .player-section {
+    max-width: 1024px;
+    .horizontal-equalizer {
+      .hz-bar {
+        width: 15px;
+      }
+    }
+  }
+
+  .now-playing-inline {
+    .song-title-inline {
+      font-size: 22px;
+      .music-icon {
+        font-size: 22px;
       }
     }
   }
