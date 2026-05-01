@@ -1,4 +1,6 @@
 {
+  "name": "Undeco Radio App",
+  "short_name": "Undeco Radio",
   "icons": [
     {
       "src": "assets/icons/icon-48.webp",
