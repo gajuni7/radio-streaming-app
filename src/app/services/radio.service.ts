@@ -34,6 +34,7 @@ export class RadioService {
 
   readonly streamUrl = 'https://sp1.hostingclouds.net/8006/stream';
   readonly metadataUrl = `${environment.apiUrl}/8006/stats`;
+  readonly nativeMetadataUrl = 'https://sp1.hostingclouds.net/8006/stats';
 
   constructor(
     private media: Media,
@@ -165,8 +166,9 @@ export class RadioService {
   }
 
   private fetchMetadata() {
+    const url = this.isNative ? this.nativeMetadataUrl : this.metadataUrl;
     this.http
-      .get<string>(this.metadataUrl, { responseType: 'text' })
+      .get<string>(url, { responseType: 'text' })
       .subscribe({
         next: (xml) => this.parseXML(xml),
         error: (err) => console.log('RadioService metadata error:', err),
