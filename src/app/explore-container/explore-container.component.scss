@@ -649,20 +649,71 @@ ion-footer {
 }
 
 @media (min-width: 1024px) {
+  .radio-container {
+    padding-top: 0;
+  }
+  .station-info {
+    .logo-container {
+      .station-logo {
+        max-height: 180px;
+      }
+    }
+  }
   .player-section {
     max-width: 1024px;
+    .player-center {
+      .sound-waves {
+        width: 300px;
+        height: 300px;
+
+        .wave {
+          &.wave-1 {
+            width: 100px;
+            height: 100px;
+          }
+
+          &.wave-2 {
+            width: 200px;
+            height: 200px;
+          }
+
+          &.wave-3 {
+            width: 300px;
+            height: 300px;
+          }
+        }
+      }
+      .main-play-button {
+        width: 100px;
+        height: 100px;
+      }
+    }
     .horizontal-equalizer {
+      margin-top: 15px;
       .hz-bar {
         width: 15px;
       }
     }
   }
 
-  .now-playing-inline {
+  .social-section {
+    .social-buttons {
+      gap: 20px;
+      .social-btn {
+        width: 45px;
+        height: 45px;
+        ion-icon {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+
+    .now-playing-inline {
     .song-title-inline {
-      font-size: 22px;
+      font-size: 14px;
       .music-icon {
-        font-size: 22px;
+        font-size: 14px;
       }
     }
   }
