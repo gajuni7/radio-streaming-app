@@ -1,4 +1,4 @@
-  <!-- Video de fondo -->
+<!-- Video de fondo -->
 <ion-content class="ion-padding radio-content">
   <video autoplay muted loop class="background-video">
     <source src="assets/video/background-video.mp4" type="video/mp4" />
@@ -62,43 +62,14 @@
         </p>
       </div>
 
-            <!-- Ecualizador horizontal arriba -->
+      <!-- Ecualizador horizontal arriba -->
       <div class="horizontal-equalizer" [class.active]="isPlaying">
-        <div class="hz-bar" style="--height: 60%; --delay: 0.1s"></div>
-        <div class="hz-bar" style="--height: 80%; --delay: 0.3s"></div>
-        <div class="hz-bar" style="--height: 40%; --delay: 0.5s"></div>
-        <div class="hz-bar" style="--height: 90%; --delay: 0.2s"></div>
-        <div class="hz-bar" style="--height: 70%; --delay: 0.7s"></div>
-        <div class="hz-bar" style="--height: 50%; --delay: 0.4s"></div>
-        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
-        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
-        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
-        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
-        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
-        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
-        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
-        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
-        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
-        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
-        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
-        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
-        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
-        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
-        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
-        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
-        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
-        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
-        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
-        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
-        <div class="hz-bar" style="--height: 75%; --delay: 0.3s"></div>
-        <div class="hz-bar" style="--height: 65%; --delay: 0.1s"></div>
-        <div class="hz-bar" style="--height: 55%; --delay: 0.9s"></div>
-        <div class="hz-bar" style="--height: 95%; --delay: 0.5s"></div>
-        <div class="hz-bar" style="--height: 45%; --delay: 0.2s"></div>
-        <div class="hz-bar" style="--height: 80%; --delay: 0.7s"></div>
-        <div class="hz-bar" style="--height: 35%; --delay: 0.4s"></div>
-        <div class="hz-bar" style="--height: 85%; --delay: 0.6s"></div>
-        <div class="hz-bar" style="--height: 30%; --delay: 0.8s"></div>
+        <div
+          *ngFor="let bar of hzBars"
+          class="hz-bar"
+          [style.--height]="bar.height"
+          [style.--delay]="bar.delay"
+        ></div>
       </div>
 
       <!-- Control de volumen compacto -->
@@ -137,58 +108,58 @@
 </ion-content>
 
 <ion-footer>
-      <!-- Redes sociales -->
-    <div class="social-section">
-      <div class="social-buttons">
-        <ion-button
-          fill="outline"
-          (click)="openSocial('facebook')"
-          class="social-btn facebook"
-        >
-          <ion-icon name="logo-facebook" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="outline"
-          (click)="openSocial('instagram')"
-          class="social-btn instagram"
-        >
-          <ion-icon name="logo-instagram" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="outline"
-          (click)="openSocial('whatsapp')"
-          class="social-btn whatsapp"
-        >
-          <ion-icon name="logo-whatsapp" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="outline"
-          (click)="openSocial('tiktok')"
-          class="social-btn tiktok"
-        >
-          <ion-icon name="logo-tiktok" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="outline"
-          (click)="openSocial('youtube')"
-          class="social-btn youtube"
-        >
-          <ion-icon name="logo-youtube" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="outline"
-          (click)="openSocial('homepage')"
-          class="social-btn homepage"
-        >
-          <ion-icon name="globe" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="outline"
-          (click)="openSocial('live')"
-          class="social-btn videocam"
-        >
-          <ion-icon name="videocam" slot="icon-only"></ion-icon>
-        </ion-button>
-      </div>
+  <!-- Redes sociales -->
+  <div class="social-section">
+    <div class="social-buttons">
+      <ion-button
+        fill="outline"
+        (click)="openSocial('facebook')"
+        class="social-btn facebook"
+      >
+        <ion-icon name="logo-facebook" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="outline"
+        (click)="openSocial('instagram')"
+        class="social-btn instagram"
+      >
+        <ion-icon name="logo-instagram" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="outline"
+        (click)="openSocial('whatsapp')"
+        class="social-btn whatsapp"
+      >
+        <ion-icon name="logo-whatsapp" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="outline"
+        (click)="openSocial('tiktok')"
+        class="social-btn tiktok"
+      >
+        <ion-icon name="logo-tiktok" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="outline"
+        (click)="openSocial('youtube')"
+        class="social-btn youtube"
+      >
+        <ion-icon name="logo-youtube" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="outline"
+        (click)="openSocial('homepage')"
+        class="social-btn homepage"
+      >
+        <ion-icon name="globe" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="outline"
+        (click)="openSocial('live')"
+        class="social-btn videocam"
+      >
+        <ion-icon name="videocam" slot="icon-only"></ion-icon>
+      </ion-button>
     </div>
+  </div>
 </ion-footer>
